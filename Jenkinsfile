@@ -11,9 +11,10 @@ pipeline {
   stages {
     stage('Lint HTML'){
       steps{
-          sh 'tidy -q -e src/*.html'
+          sh "tidy -q -e src/*.html"
       }
     }
+  
     stage('CI Build and push snapshot') {
       when {
         branch 'PR-*'
