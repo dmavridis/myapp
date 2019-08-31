@@ -6,7 +6,7 @@ The purpose of this project is to develop a simple application applying the prin
 
 Due to small experience with DevOps, I decided to use a simple application, that includes an `index.html` file, which is deployed to a Docker image of an Nginx server, as shown in the following pipeline. 
 
-![pipeline](images\pipeline.png)
+![pipeline](images/pipeline.png)
 
 ## Approach
 
