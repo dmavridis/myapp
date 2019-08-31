@@ -66,7 +66,7 @@ eksctl create cluster \
 
 This script is using the `eksctl` command that automatically creates the VPC and the nodegroups using Cloudformation. Two nodes are up and running as shown in the screenshot.
 
-![nodes](images\nodes.png)
+![nodes](images/nodes.png)
 
 Also, running jx command the following is generate:
 
