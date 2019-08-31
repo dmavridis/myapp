@@ -92,7 +92,7 @@ The docker file is generating and uploading the container to AWS ECR. It is then
 
 The initial webpage looks like the screenshot. 
 
-![version1](images\version1.png)
+![version1](images/version1.png)
 
 
 
@@ -100,7 +100,7 @@ Making a small change in the html file, after a few minutes a new version is up 
 
 
 
-![1566341023889](images\steps.png)
+![1566341023889](images/steps.png)
 
-![version2](images\version2.png)
+![version2](images/version2.png)
 
