@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  EKS nodes (AMI family: AmazonLinux2, SSH access: false, private networking:
+  false) [created and managed by eksctl]
+Resources:
+  EgressInterCluster:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      Description: >-
+        Allow control plane to communicate with worker nodes in group
+        ng-05f4c622 (kubelet and workload TCP ports)
+      DestinationSecurityGroupId: !Ref SG
+      FromPort: 1025
+      GroupId: !ImportValue 'eksctl-dimicloud-cluster::SecurityGroup'
+      IpProtocol: tcp
+      ToPort: 65535
+  EgressInterClusterAPI:
+    Type: 'AWS::EC2::SecurityGroupEgress'
+    Properties:
+      Description: >-
+        Allow control plane to communicate with worker nodes in group
+        ng-05f4c622 (workloads using HTTPS port, commonly used with extension
+        API servers)
+      DestinationSecurityGroupId: !Ref SG
+      FromPort: 443
+      GroupId: !ImportValue 'eksctl-dimicloud-cluster::SecurityGroup'
+      IpProtocol: tcp
+      ToPort: 443
+  IngressInterCluster:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      Description: >-
+        Allow worker nodes in group ng-05f4c622 to communicate with control
+        plane (kubelet and workload TCP ports)
+      FromPort: 1025
+      GroupId: !Ref SG
+      IpProtocol: tcp
+      SourceSecurityGroupId: !ImportValue 'eksctl-dimicloud-cluster::SecurityGroup'
+      ToPort: 65535
+  IngressInterClusterAPI:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      Description: >-
+        Allow worker nodes in group ng-05f4c622 to communicate with control
+        plane (workloads using HTTPS port, commonly used with extension API
+        servers)
+      FromPort: 443
+      GroupId: !Ref SG
+      IpProtocol: tcp
+      SourceSecurityGroupId: !ImportValue 'eksctl-dimicloud-cluster::SecurityGroup'
+      ToPort: 443
+  IngressInterClusterCP:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      Description: >-
+        Allow control plane to receive API requests from worker nodes in group
+        ng-05f4c622
+      FromPort: 443
+      GroupId: !ImportValue 'eksctl-dimicloud-cluster::SecurityGroup'
+      IpProtocol: tcp
+      SourceSecurityGroupId: !Ref SG
+      ToPort: 443
+  NodeGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      DesiredCapacity: '2'
+      LaunchTemplate:
+        LaunchTemplateName: !Sub '${AWS::StackName}'
+        Version: !GetAtt NodeGroupLaunchTemplate.LatestVersionNumber
+      MaxSize: '3'
+      MinSize: '1'
+      Tags:
+        - Key: Name
+          PropagateAtLaunch: 'true'
+          Value: dimicloud-ng-05f4c622-Node
+        - Key: kubernetes.io/cluster/dimicloud
+          PropagateAtLaunch: 'true'
+          Value: owned
+      VPCZoneIdentifier: !Split 
+        - ','
+        - !ImportValue 'eksctl-dimicloud-cluster::SubnetsPublic'
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MaxBatchSize: '1'
+        MinInstancesInService: '0'
+  NodeGroupLaunchTemplate:
+    Type: 'AWS::EC2::LaunchTemplate'
+    Properties:
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/xvda
+            Ebs:
+              Encrypted: false
+              VolumeSize: 20
+              VolumeType: gp2
+        IamInstanceProfile:
+          Arn: !GetAtt NodeInstanceProfile.Arn
+        ImageId: ami-0d3998d69ebe9b214
+        InstanceType: m5.large
+        NetworkInterfaces:
+          - AssociatePublicIpAddress: true
+            DeviceIndex: 0
+            Groups:
+              - !ImportValue 'eksctl-dimicloud-cluster::SharedNodeSecurityGroup'
+              - !Ref SG
+        UserData: >-
+          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
+      LaunchTemplateName: !Sub '${AWS::StackName}'
+  NodeInstanceProfile:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      Path: /
+      Roles:
+        - !Ref NodeInstanceRole
+  NodeInstanceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action:
+              - 'sts:AssumeRole'
+            Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+        Version: 2012-10-17
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy'
+        - 'arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy'
+        - 'arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser'
+      Path: /
+  SG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: >-
+        Communication between the control plane and worker nodes in group
+        ng-05f4c622
+      Tags:
+        - Key: kubernetes.io/cluster/dimicloud
+          Value: owned
+        - Key: Name
+          Value: !Sub '${AWS::StackName}/SG'
+      VpcId: !ImportValue 'eksctl-dimicloud-cluster::VPC'
+Outputs:
+  FeatureLocalSecurityGroup:
+    Value: true
+  FeaturePrivateNetworking:
+    Value: false
+  FeatureSharedSecurityGroup:
+    Value: true
+  InstanceProfileARN:
+    Export:
+      Name: !Sub '${AWS::StackName}::InstanceProfileARN'
+    Value: !GetAtt NodeInstanceProfile.Arn
+  InstanceRoleARN:
+    Export:
+      Name: !Sub '${AWS::StackName}::InstanceRoleARN'
+    Value: !GetAtt NodeInstanceRole.Arn
