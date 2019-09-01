@@ -50,7 +50,8 @@ pipeline {
           sh "jx step git credentials"
           sh "jx step next-version --use-git-tag-only --tag"
           sh "export VERSION=`cat VERSION` && skaffold build -f skaffold.yaml"
-          sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"
+//          sh "jx step post build --image $DOCKER_REGISTRY/$ORG/$APP_NAME:\$(cat VERSION)"
+            sh "jx step post build --image $DOCKER_REGISTRY:\$(cat VERSION)" 
         }
       }
     }
