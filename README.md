@@ -1,5 +1,15 @@
 # Capstone Project 
 
+https://github.com/dmavridis/myapp
+
+**Update from the first submission**
+
+The feedback from the previous submission was to add a central repository. The application is already doing that using **Amazon ECR** as shown in the following screenshot. 
+
+![ecr](images/ecr.png)
+
+Using Dockerhub is another option, but Jenkins-X as it is ran in the cluster it is not easy to install programs such as docker. 
+
 ## Scope of the Project
 
 The purpose of this project is to develop a simple application applying the principles of CI/CD and GitOps, using Kubernetes. 
