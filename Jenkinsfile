@@ -17,10 +17,12 @@ pipeline {
 //      }
 //    }
     stage('Push image to Docker Hub'){
-      script{
-        docker.build('myapp')
-        docker.withRegistry('', $REGISTRY_CREDENTIAL) {
-          docker.image('myapp').push('latest')
+      steps{
+        script{
+          docker.build('myapp')
+          docker.withRegistry('', $REGISTRY_CREDENTIAL) {
+            docker.image('myapp').push('latest')
+          }
         }
       }
     }
