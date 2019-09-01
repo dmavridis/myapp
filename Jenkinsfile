@@ -16,16 +16,6 @@ pipeline {
 //          sh "tidy -q -e src/*.html"
 //      }
 //    }
-    stage('Push image to Docker Hub'){
-      steps{
-        script{
-          docker.build('myapp')
-          docker.withRegistry('', $REGISTRY_CREDENTIAL) {
-            docker.image('myapp').push('latest')
-          }
-        }
-      }
-    }
     
     stage('CI Build and push snapshot') {
       when {
