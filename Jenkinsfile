@@ -21,7 +21,8 @@ pipeline {
         docker.build('myapp')
         docker.withRegistry('', $REGISTRY_CREDENTIAL) {
           docker.image('myapp').push('latest')
-        }    
+        }
+      }
     }
     
     stage('CI Build and push snapshot') {
