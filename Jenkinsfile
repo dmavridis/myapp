@@ -7,6 +7,8 @@ pipeline {
     APP_NAME = 'myapp'
     CHARTMUSEUM_CREDS = credentials('jenkins-x-chartmuseum')
     DOCKER_REGISTRY_ORG = 'dmavridis'
+    REGISTRY_CREDENTIAL = 'dockerhub'
+    REGISTRY = 'dmavridis/myapp'
   }
   stages {
 //    stage('Lint HTML'){
@@ -14,7 +16,14 @@ pipeline {
 //          sh "tidy -q -e src/*.html"
 //      }
 //    }
-  
+    stage('Push image to Docker Hub'){
+      script{
+        docker.build('myapp')
+        docker.withRegistry('', $REGISTRY_CREDENTIAL) {
+          docker.image('myapp').push('latest')
+        }    
+    }
+    
     stage('CI Build and push snapshot') {
       when {
         branch 'PR-*'
